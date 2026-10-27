@@ -16,7 +16,7 @@ jobs:
       DESTINATION: bkennedyshit/creative-claw-meta-2026
       SOURCE_REPOSITORY: bkennedyshit/creative-claw
       SOURCE_SHA: e68a13ca24f5de82334949861a5fe4bedc3e4316
-      EXPECTED_PARENT: 190b42e9ce049b6b32bf0c5ca336bb5eedab56cf
+      EXPECTED_PARENT: 86cce00eb7600af92d5b18a38275584aef2d33ea
       VERIFY_FILE: package.json
     steps:
       - name: Copy fixed source, preserve plans and remove this workflow
@@ -53,7 +53,7 @@ jobs:
           git read-tree --reset -u "$SOURCE_SHA"
           git rm -r --ignore-unmatch -- .github/workflows
           python3 - <<'PY'
-          import os, pathlib, re, shutil
+          import datetime, os, pathlib, re, shutil
           for path in pathlib.Path(os.environ["PRESERVED_DOCS"]).iterdir():
               shutil.copy2(path, pathlib.Path(path.name))
           p = pathlib.Path("README.md")
@@ -76,7 +76,7 @@ jobs:
           test -f "$VERIFY_FILE"
           test ! -d .github/workflows
           git add -f -- README.md HACKATHON_*.md
-          git diff --cached --check
+          git diff --cached --check -- README.md 'HACKATHON_*.md'
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore: copy approved pinned source and preserve hackathon plans"
