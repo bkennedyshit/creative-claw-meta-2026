@@ -1,4 +1,4 @@
-# Source transfer pending approval
+# Approved one-time source transfer
 
 The repository currently contains preparation documents only. The corresponding local source copy is ready; its application files have not yet been transferred to this GitHub repository.
 
@@ -27,6 +27,8 @@ No credentials or secrets would be copied to another service, and original sourc
 
 ## Approval status
 
-NOT APPROVED / NOT INSTALLED. Automatic approval review rejected both a persistent copy workflow and the proposed self-removing version because repository preparation did not explicitly authorize that write-capable automation. No transfer workflow was written or run.
+APPROVED by the user on October 27, 2026. The previous automatic review rejection is resolved by that explicit authorization of the temporary write-capable transfer job.
 
-The user's specific approval is needed before attempting that job. An alternative is an authenticated direct git push; no shell GitHub credentials are available in this workspace. Preparation documents are already committed here.
+The workflow is manually dispatched and removes itself on success. No transfer has run yet. The browser connection is currently unavailable, so execution is pending. Run the **Approved one-time source transfer** workflow from the repository's Actions page on main once. The fixed source and destination above cannot be changed through inputs.
+
+After completion, verify HACKATHON_SOURCE.md, preserved planning documents, application files and the absence of .github/workflows. Original repositories remain unchanged.
