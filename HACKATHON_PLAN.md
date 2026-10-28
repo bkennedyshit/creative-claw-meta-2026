@@ -7,7 +7,7 @@ Prepared 2026-10-26; refreshed from current upstream 2026-10-28. Status: plannin
 A general-purpose creative agent: import photos/audio/video, describe the desired edit, review it, request a correction and export. The application should make its existing native execution system usable to creators across domains.
 
 Source: https://github.com/bkennedyshit/creative-claw
-Baseline: 8ac8e2fe1f1c87353c0233eb0aaa12d07ffdeeda.
+Baseline: 64536967c0e5729cce527730d44279279a0db208.
 Creative Claw inherits OpenClaw and adds native C++ media plugins, local perception, GPU coordination and SQLite visual memory. Preserve all provenance and notices. Separate this foundation from work completed during the Meta event.
 
 ## Timing
@@ -41,6 +41,10 @@ HACKATHON_EXECUTION.md defines the Nov 1-4 execution sequence and evidence.
 
 ## Current upstream refresh
 
-The October 28 source transfer uses upstream 8ac8e2fe1f1c87353c0233eb0aaa12d07ffdeeda, which includes the Creative Studio, editable graphs/recipes, native foreground effects and durable job UI source added since the earlier August baseline. Read extensions/creative-engines/README.md before designing more UI. Reuse these existing surfaces; confirm runtime behavior on a provisioned machine. Source inspection is not a fresh native-engine test.
+The October 28 source transfer uses upstream 64536967c0e5729cce527730d44279279a0db208, which includes the Creative Studio, editable graphs/recipes, native foreground effects and durable job UI source added since the earlier August baseline. Read extensions/creative-engines/README.md before designing more UI. Reuse these existing surfaces; confirm runtime behavior on a provisioned machine. Source inspection is not a fresh native-engine test.
 
 Visual-memory search currently uses a hash embedder described as lexical/byte similarity; do not market it as semantic vision retrieval. The new provider integration must be evaluated separately.
+
+## Studio refresh from merged PR #6
+
+Refreshed October 28, 2026 from upstream `64536967c0e5729cce527730d44279279a0db208`. This includes media-scoped workspaces, draft/path preservation, recoverable workflow archive/restore, a resizable canvas and historical output previews. These are inherited Creative Claw fixes, not new Meta-event work. Retain Creative Studio; no external frontend is needed. Meta-specific implementation remains deferred until November 1. Public event overview alone does not establish existing-project eligibility: obtain accepted-participant Official Rules before claiming this entry qualifies.
