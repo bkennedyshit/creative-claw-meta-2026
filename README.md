@@ -2,7 +2,7 @@
 
 > See [verified dates and priorities](HACKATHON_DATES.md) before scheduling work.
 
-> **Source transfer pending:** this GitHub repository currently contains planning documents only. The refreshed source is prepared locally. See [the transfer plan](HACKATHON_TRANSFER.md) for the pinned revision and remaining step.
+> **Source snapshot transferred:** application source is present. See [source provenance](HACKATHON_SOURCE.md). Sponsor-specific work remains planned.
 
 General-purpose creative editing agent preparation for the Meta Global AI Developer Hackathon.
 

@@ -1,13 +1,13 @@
 # Creative Claw — Meta Muse 2026
 
-Prepared 2026-10-26; refreshed from current upstream 2026-10-27. Status: planning copy of the existing application. Meta provider integration, sponsor-specific UI changes and new demo are not yet implemented.
+Prepared 2026-10-26; refreshed from current upstream 2026-10-28. Status: planning copy of the existing application. Meta provider integration, sponsor-specific UI changes and new demo are not yet implemented.
 
 ## Product and provenance
 
 A general-purpose creative agent: import photos/audio/video, describe the desired edit, review it, request a correction and export. The application should make its existing native execution system usable to creators across domains.
 
 Source: https://github.com/bkennedyshit/creative-claw
-Baseline: e68a13ca24f5de82334949861a5fe4bedc3e4316.
+Baseline: 8ac8e2fe1f1c87353c0233eb0aaa12d07ffdeeda.
 Creative Claw inherits OpenClaw and adds native C++ media plugins, local perception, GPU coordination and SQLite visual memory. Preserve all provenance and notices. Separate this foundation from work completed during the Meta event.
 
 ## Timing
@@ -41,6 +41,6 @@ HACKATHON_EXECUTION.md defines the Nov 1-4 execution sequence and evidence.
 
 ## Current upstream refresh
 
-The October 27 preparation refresh uses upstream e68a13ca24f5de82334949861a5fe4bedc3e4316, which includes the Creative Studio, editable graphs/recipes, native foreground effects and durable job UI source added since the earlier August baseline. Read extensions/creative-engines/README.md before designing more UI. Reuse these existing surfaces; confirm runtime behavior on a provisioned machine. Source inspection is not a fresh native-engine test.
+The October 28 source transfer uses upstream 8ac8e2fe1f1c87353c0233eb0aaa12d07ffdeeda, which includes the Creative Studio, editable graphs/recipes, native foreground effects and durable job UI source added since the earlier August baseline. Read extensions/creative-engines/README.md before designing more UI. Reuse these existing surfaces; confirm runtime behavior on a provisioned machine. Source inspection is not a fresh native-engine test.
 
 Visual-memory search currently uses a hash embedder described as lexical/byte similarity; do not market it as semantic vision retrieval. The new provider integration must be evaluated separately.

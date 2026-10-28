@@ -1,0 +1,189 @@
+/**
+ * Resolves package assets and per-user agent directories for the CLI/runtime.
+ *
+ * These helpers must work from source, dist, and Bun single-file binaries.
+ */
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { APP_NAME as BRAND_APP_NAME, APP_STATE_DIRNAME } from "../infra/app-branding.js";
+
+// =============================================================================
+// Package Detection
+// =============================================================================
+
+const currentFile = fileURLToPath(import.meta.url);
+const currentDir = dirname(currentFile);
+
+/**
+ * Detect if we're running as a Bun compiled binary.
+ * Bun binaries have import.meta.url containing "$bunfs", "~BUN", or "%7EBUN" (Bun's virtual filesystem path)
+ */
+export const isBunBinary =
+  import.meta.url.includes("$bunfs") ||
+  import.meta.url.includes("~BUN") ||
+  import.meta.url.includes("%7EBUN");
+
+// =============================================================================
+// Package Asset Paths (shipped with executable)
+// =============================================================================
+
+/**
+ * Get the base directory for resolving package assets (themes, package.json, README.md, CHANGELOG.md).
+ * - For Bun binary: returns the directory containing the executable
+ * - For Node.js (dist/): returns currentDir (the dist/ directory)
+ * - For tsx (src/): returns parent directory (the package root)
+ */
+function getPackageDir(): string {
+  // Allow override via environment variable (useful for Nix/Guix where store paths tokenize poorly)
+  const envDir = process.env.OPENCLAW_PACKAGE_DIR;
+  if (envDir) {
+    if (envDir === "~") {
+      return homedir();
+    }
+    if (envDir.startsWith("~/")) {
+      return homedir() + envDir.slice(1);
+    }
+    return envDir;
+  }
+
+  if (isBunBinary) {
+    // Bun binary: process.execPath points to the compiled executable
+    return dirname(process.execPath);
+  }
+  // Node.js: walk up from currentDir until we find package.json
+  let dir = currentDir;
+  while (dir !== dirname(dir)) {
+    if (existsSync(join(dir, "package.json"))) {
+      return dir;
+    }
+    dir = dirname(dir);
+  }
+  // Fallback (shouldn't happen)
+  return currentDir;
+}
+
+function getPackageSourceOrDistDir(): string {
+  const packageDir = getPackageDir();
+  const srcOrDist = existsSync(join(packageDir, "src")) ? "src" : "dist";
+  return join(packageDir, srcOrDist);
+}
+
+/**
+ * Get path to built-in themes directory (shipped with package)
+ * - For Bun binary: theme/ next to executable
+ * - For Node.js (dist/): dist/agents/modes/interactive/theme/
+ * - For tsx (src/): src/agents/modes/interactive/theme/
+ */
+export function getThemesDir(): string {
+  if (isBunBinary) {
+    return join(getPackageDir(), "theme");
+  }
+  return join(getPackageSourceOrDistDir(), "agents", "modes", "interactive", "theme");
+}
+
+/** Get path to package.json */
+function getPackageJsonPath(): string {
+  return join(getPackageDir(), "package.json");
+}
+
+/** Get path to README.md */
+export function getReadmePath(): string {
+  return resolve(join(getPackageDir(), "README.md"));
+}
+
+/** Get path to docs directory */
+export function getDocsPath(): string {
+  return resolve(join(getPackageDir(), "docs"));
+}
+
+/** Get path to examples directory */
+export function getExamplesPath(): string {
+  return resolve(join(getPackageDir(), "examples"));
+}
+
+// =============================================================================
+// App Config (from package.json openclawConfig)
+// =============================================================================
+
+interface PackageJson {
+  version?: string;
+}
+
+const pkg = JSON.parse(readFileSync(getPackageJsonPath(), "utf-8")) as PackageJson;
+
+// Branding comes from ../infra/app-branding.ts, which is the SINGLE source the
+// low-level path resolver (src/config/paths.ts) also reads. These used to be
+// derived independently here, which let the agent dir and the config/state dir
+// disagree whenever a fork set the seam.
+export const APP_NAME: string = BRAND_APP_NAME;
+export const CONFIG_DIR_NAME: string = APP_STATE_DIRNAME;
+export const VERSION: string = pkg.version || "0.0.0";
+
+const ENV_AGENT_DIR = `${APP_NAME.toUpperCase()}_AGENT_DIR`;
+
+/**
+ * The historical agent-dir override name, accepted alongside {@link ENV_AGENT_DIR}.
+ *
+ * WHY: `ENV_AGENT_DIR` is derived from `APP_NAME`, so setting the branding seam
+ * silently renames the override to `CREATIVECLAW_AGENT_DIR` — while every other
+ * reader in the tree still hardcodes `OPENCLAW_AGENT_DIR`
+ * (`plugin-sdk/agent-dir-compat.ts`, `commands/doctor-auth-flat-profiles.ts`,
+ * `commands/doctor-auth-oauth-sidecar.ts`, `commands/models/list.status-command.ts`,
+ * `secrets/storage-scan.ts`, `secrets/runtime-fast-path.ts`, `infra/dotenv.ts`,
+ * `infra/state-migrations.ts`, `cli/gateway-cli/pre-bootstrap.ts`). That is the
+ * same split brain `infra/app-branding.ts` exists to prevent, one layer up: the
+ * override would move the agent dir for this module and be ignored everywhere
+ * else. The rebrand renames *directories*, not env-var prefixes, so both names
+ * are honored and the branded one wins when both are set.
+ */
+const LEGACY_ENV_AGENT_DIR = "OPENCLAW_AGENT_DIR";
+
+/** First non-empty agent-dir override, branded name first. */
+function readEnvAgentDir(): string | undefined {
+  const branded = process.env[ENV_AGENT_DIR]?.trim();
+  if (branded) {
+    return branded;
+  }
+  const legacy = process.env[LEGACY_ENV_AGENT_DIR]?.trim();
+  return legacy ? legacy : undefined;
+}
+
+function expandTildePath(path: string): string {
+  if (path === "~") {
+    return homedir();
+  }
+  if (path.startsWith("~/")) {
+    return homedir() + path.slice(1);
+  }
+  return path;
+}
+
+// =============================================================================
+// User Config Paths (~/.openclaw/agent/*)
+// =============================================================================
+
+/** Get the agent config directory (e.g., ~/.openclaw/agent/) */
+export function getAgentDir(): string {
+  const envDir = readEnvAgentDir();
+  if (envDir) {
+    return expandTildePath(envDir);
+  }
+  return join(homedir(), CONFIG_DIR_NAME, "agent");
+}
+
+/** Get path to user's custom themes directory */
+export function getCustomThemesDir(): string {
+  return join(getAgentDir(), "themes");
+}
+
+/** Get path to managed binaries directory (fd, rg) */
+export function getBinDir(): string {
+  return join(getAgentDir(), "bin");
+}
+
+/** Get path to sessions directory */
+export function getSessionsDir(): string {
+  return join(getAgentDir(), "sessions");
+}
