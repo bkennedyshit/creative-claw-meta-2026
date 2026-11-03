@@ -565,3 +565,51 @@
   max-height: 480px;
   margin-inline: auto;
 }
+
+.creative-revision__form {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.creative-revision__form .field textarea {
+  min-height: 72px;
+}
+
+.creative-revision__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.creative-revision__timeline,
+.creative-revision__exports {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.creative-revision__item {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.creative-revision__item p,
+.creative-revision__item pre {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.creative-revision__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}

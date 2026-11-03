@@ -13,6 +13,7 @@ import {
   type CreativePreview,
 } from "../controllers/creative-studio.ts";
 import { renderParameterFields } from "./creative-parameters.ts";
+import { renderCreativeRevision } from "./creative-revision.ts";
 import { renderCreativeWorkflow } from "./creative-workflow.ts";
 
 export interface CreativeStudioViewProps {
@@ -258,11 +259,11 @@ export function renderCreativeStudio(props: CreativeStudioViewProps) {
       <section class="creative-hero" aria-labelledby="creative-hero-title">
         <div class="creative-hero__glow" aria-hidden="true"></div>
         <div class="creative-hero__content">
-          <div class="creative-hero__eyebrow">Creative Claw · Local-native media runtime</div>
-          <h1 id="creative-hero-title">Frontier reasoning. Local perception. Native execution.</h1>
+          <div class="creative-hero__eyebrow">Creative Claw · Meta hackathon edition</div>
+          <h1 id="creative-hero-title">Describe the edit. Review it. Correct it. Export it.</h1>
           <p class="creative-hero__lede">
-            An agent that sees and hears your media locally, then performs real image, audio, video,
-            and vector operations through in-process native engines.
+            Meta Muse Spark plans edits from a creator's words. Creative Claw's native C++ and
+            FFmpeg engines execute them on local files, and originals are preserved.
           </p>
           <div class="creative-hero__formats" aria-label="Supported media engines">
             <span>IMAGE</span><span>AUDIO</span><span>VIDEO</span><span>VECTOR</span>
@@ -289,7 +290,7 @@ export function renderCreativeStudio(props: CreativeStudioViewProps) {
         </div>
         <div class="creative-hero__attribution">Built on the OpenClaw runtime</div>
       </section>
-      ${renderMediaTabs(props)}
+      ${renderMediaTabs(props)} ${props.studio ? renderCreativeRevision(props.studio) : nothing}
       ${props.studio?.workflow.dirty
         ? html`<div class="callout warn" role="alert">
             Unsaved draft: ${props.studio.workflow.graph?.name}. Save or discard it before switching

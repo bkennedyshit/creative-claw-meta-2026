@@ -3,6 +3,7 @@ import type { CreativeCapabilityDescriptor, CreativeGraph } from "@openclaw/crea
 import type { ReactiveController, ReactiveControllerHost } from "lit";
 import type { GatewayBrowserClient } from "../gateway.ts";
 import { CreativeJobsController } from "./creative-jobs.ts";
+import { CreativeRevisionController } from "./creative-revision.ts";
 import { CreativeWorkflowController } from "./creative-workflow.ts";
 
 export type CreativeMedia = "image" | "audio" | "video" | "vector" | "vfx" | "ai";
@@ -176,11 +177,13 @@ export class CreativeStudioController implements ReactiveController {
   private restored = false;
   readonly workflow: CreativeWorkflowController;
   readonly jobs: CreativeJobsController;
+  readonly revisions: CreativeRevisionController;
 
   constructor(host: CreativeStudioHost) {
     this.host = host;
     this.workflow = new CreativeWorkflowController(host, this);
     this.jobs = new CreativeJobsController(host, this);
+    this.revisions = new CreativeRevisionController(host, this);
     this.host.addController(this);
   }
 
@@ -245,6 +248,7 @@ export class CreativeStudioController implements ReactiveController {
       this.loadRecentOutputs(client),
       this.workflow.loadRecipes(),
       this.jobs.load(),
+      this.revisions.load(),
       this.searchMedia(""),
     ]);
     this.host.requestUpdate();
