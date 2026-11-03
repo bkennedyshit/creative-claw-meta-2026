@@ -215,6 +215,52 @@ source parentage, capability version, and resolved parameters.
 - `/plugins/creative-engines/artifacts/<artifact-id>`: authenticated media preview
   for recorded artifacts only. Studio fetches the preview with Gateway credentials.
 
+## Describe an edit (model-planned revisions)
+
+A revision session turns a plain-language request into a validated native
+operation chain. The default agent's configured model writes the plan through
+the host's `runtime.llm.complete`; the Meta launcher points that model at
+`muse-spark-1.3`. The model only plans. Native engines execute.
+
+- `creative.studio.revision.start`: accepts source `input` (resolved on the
+  Gateway, so use an absolute path) and `instruction` (1-2000 characters). Supported extensions: `.png`, `.jpg`,
+  `.jpeg`, `.webp`, `.mp4`, `.mov`, `.webm`, `.mkv`, `.wav`, `.mp3`, `.flac`,
+  `.svg`. Records the source SHA-256, plans, runs and returns `session` and `revision`.
+- `creative.studio.revision.correct`: accepts session `id` and `feedback`. The
+  model receives the previous successful plan and returns a complete new plan.
+  A session holds up to 20 revisions.
+- `creative.studio.revision.export`: accepts session `id`, a new `output` path and
+  optional `revision` number (default: latest successful). Returns `session` and
+  the `export` record.
+- `creative.studio.revision.get`: accepts `id` and returns the `session`.
+- `creative.studio.revision.list`: returns the 20 most recently updated `sessions`.
+
+Guarantees:
+
+- The model sees the request, file name, type, image dimensions or media
+  duration, and a catalog of single-input, single-output operations whose
+  engines are available on this gateway. It does not see pixels.
+- Plans have 1-6 steps. Every step must name an available operation, accept the
+  previous step's output type and pass the descriptor's parameter validation
+  before any engine runs. Defaults are resolved before execution.
+- A malformed or invalid reply gets one re-ask with the rejection reason. An
+  empty plan is a decline and is reported without a re-ask.
+- Every plan, including corrections, runs on the original source through the
+  same linear Studio graph builder as the starter recipes. Outputs are recorded
+  Studio artifacts with authenticated previews.
+- After every run, including failures, the source is re-hashed and the revision
+  records `sourceUnchanged`.
+- Failed revisions are stored with their `error` and the rejected reply, and
+  produce no artifact. Only one revision or export runs per session at a time.
+- Export requires a completed preview, the same extension as that output, a path
+  other than the source and a path that does not exist. It copies without
+  overwrite, compares SHA-256 of the copy with the preview, and deletes the
+  copy if they differ.
+
+Methods that fail on bad input (missing source, unsupported type, unknown
+session, invalid export path) respond with `{ ok: false, error }`. Planning and
+execution failures return a normal response whose `revision.status` is `failed`.
+
 ## Verify locally
 
 ```powershell

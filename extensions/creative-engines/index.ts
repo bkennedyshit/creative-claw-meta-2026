@@ -18,6 +18,7 @@ import { ImageEngineRuntime } from "./src/runtime/image.js";
 import { VectorEngineRuntime } from "./src/runtime/vector.js";
 import { VfxEngineRuntime, VFX_CAPABILITIES } from "./src/runtime/vfx.js";
 import { VideoEngineRuntime } from "./src/runtime/video.js";
+import { registerStudioRevisions } from "./src/studio-revisions.js";
 import { registerCreativeStudio } from "./src/studio.js";
 import { registerCreativeSurface } from "./src/surface.js";
 import { registerBatchTools } from "./src/tools/batch.js";
@@ -225,7 +226,9 @@ export default definePluginEntry({
     // Operator surface: `openclaw creative ...` CLI + Control UI settings card.
     // Capability-guarded inside; no-ops honestly on hosts lacking the methods.
     registerCreativeSurface(api, engines);
-    registerCreativeStudio(api, { ...engines, vfx: vfxEngine, ai: aiEngine }, codec);
+    const studioEngines = { ...engines, vfx: vfxEngine, ai: aiEngine };
+    const studio = registerCreativeStudio(api, studioEngines, codec);
+    registerStudioRevisions(api, studio, studioEngines, codec);
 
     // Register compact discovery tools for agent and Codex tool-call loops.
     registerDiscoveryTools(registerTool);

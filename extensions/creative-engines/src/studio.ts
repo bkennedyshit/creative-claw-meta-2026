@@ -28,7 +28,7 @@ type Run = { graph: CreativeGraph; artifact: CreativeArtifact; input: string; ou
 const PROJECT_ID = "studio";
 const ARTIFACT_ROUTE = "/plugins/creative-engines/artifacts/";
 
-async function fileIdentity(path: string) {
+export async function fileIdentity(path: string) {
   const info = await stat(path);
   if (!info.isFile() || info.size === 0) {
     throw new Error("Expected a nonempty media file");

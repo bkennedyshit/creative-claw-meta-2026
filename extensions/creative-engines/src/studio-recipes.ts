@@ -3,7 +3,7 @@ import type { CreativeGraph } from "@openclaw/creative-contracts";
 import { getCreativeCapability } from "./capabilities.js";
 import { prepareStudioGraph, type StudioFileType } from "./studio-graph.js";
 
-type Step = [capability: string, parameters?: Record<string, unknown>];
+export type Step = [capability: string, parameters?: Record<string, unknown>];
 export type StudioRecipe = {
   id: string;
   name: string;
@@ -309,27 +309,39 @@ export function buildStudioRecipe(id: string): CreativeGraph {
   if (!selected) {
     throw new Error("Unknown workflow recipe");
   }
+  return buildLinearStudioGraph(selected.name, selected.sourceType, selected.steps, {
+    recipeId: id,
+  });
+}
+
+/** Chain single-input operations source → step 1 → … → result as a validated Studio graph. */
+export function buildLinearStudioGraph(
+  name: string,
+  sourceType: StudioFileType,
+  steps: readonly Step[],
+  metadata: Record<string, unknown>,
+): CreativeGraph {
   const now = new Date().toISOString();
   const graph: CreativeGraph = {
     schemaVersion: 1,
     id: `workflow-${randomUUID()}`,
     projectId: "studio",
-    name: selected.name,
+    name,
     revision: 0,
     createdAt: now,
     updatedAt: now,
-    inputs: [{ name: "source", dataType: selected.sourceType, required: true }],
+    inputs: [{ name: "source", dataType: sourceType, required: true }],
     outputs: [],
     nodes: [],
     edges: [],
-    metadata: { recipeId: id },
+    metadata,
   };
   let upstream = graph.id;
   let upstreamPort = "source";
-  for (const [index, [capability, parameters]] of selected.steps.entries()) {
+  for (const [index, [capability, parameters]] of steps.entries()) {
     const descriptor = getCreativeCapability(capability);
     if (!descriptor) {
-      throw new Error(`Recipe capability unavailable: ${capability}`);
+      throw new Error(`Capability unavailable: ${capability}`);
     }
     const nodeId = `step-${index + 1}`;
     graph.nodes.push({
