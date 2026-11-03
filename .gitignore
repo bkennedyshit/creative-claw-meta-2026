@@ -289,3 +289,6 @@ extensions/creative-engines/binaries/models/
 BOOT_DIAGNOSIS.md
 HANDOFF.md
 HONESTY_FIXES.md
+
+# Meta hackathon Model API key (local only)
+.env.meta
