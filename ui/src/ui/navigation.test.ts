@@ -230,8 +230,8 @@ describe("inferBasePathFromPathname", () => {
 describe("TAB_GROUPS", () => {
   it("contains all expected groups", () => {
     expect(TAB_GROUPS.map((g) => g.label)).toEqual([
-      "chat",
       "creative",
+      "chat",
       "control",
       "agent",
       "settings",
