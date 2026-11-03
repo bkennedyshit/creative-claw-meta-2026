@@ -2,15 +2,23 @@
 
 > See [verified dates and priorities](HACKATHON_DATES.md) before scheduling work.
 
-> **Source snapshot transferred:** application source is present. See [source provenance](HACKATHON_SOURCE.md). Sponsor-specific work remains planned.
+> **Source snapshot transferred:** application source is present. See [source provenance](HACKATHON_SOURCE.md).
 
-General-purpose creative editing agent preparation for the Meta Global AI Developer Hackathon.
+General-purpose creative editing agent for the Meta Global AI Developer Hackathon.
 
-**Status:** existing Creative Claw foundation plus planning documents. Meta integration and sponsor-specific orchestration are not implemented or live-tested.
+**Status:** Meta Model API profile and the model-planned edit, correction and export workflow are implemented and tested locally with the real native engines. Live Meta inference is pending a Model API key.
 
 - [Competition direction and provenance](HACKATHON_PLAN.md)
 - [Muse, memory and VR decisions](HACKATHON_MODELS.md)
 - [Execution and submission checklist](HACKATHON_EXECUTION.md)
+
+## Meta Global AI Developer Hackathon edition
+
+This copy adds a Meta-planned "describe an edit" workflow: Muse Spark plans edits over Creative Claw's native operations, and the creator previews, corrects and exports the result while the original file stays unchanged. The foundation is OpenClaw and Creative Claw; their engines, Studio and runtime are inherited, not event work. Live Meta inference has not been verified yet.
+
+- [Event-period new work and foundation](HACKATHON_NEW_WORK.md)
+- [Setup, launch and verification status](HACKATHON_TESTING.md)
+- [Three-minute demo script](HACKATHON_DEMO.md)
 
 ## Existing Creative Claw foundation
 
