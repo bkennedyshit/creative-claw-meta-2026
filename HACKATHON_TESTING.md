@@ -1,5 +1,9 @@
 # Meta testing and isolated launch
 
+For the local open-weight Meta model route without an API key, use
+[Local Muse Glimmer](HACKATHON_LOCAL_MODEL.md). The commands below describe the
+separate hosted API and native-only profiles.
+
 This copy keeps the existing Creative Studio frontend and native media engines. It adds an isolated launcher for the Meta Model API and a model-planned revision workflow. See [new work](HACKATHON_NEW_WORK.md) for what was built during the event.
 
 ## Prerequisites
@@ -112,7 +116,8 @@ Verified locally:
 Not yet verified:
 
 - Live Meta inference. No key was available yet, so `smoke` and `revise` have not run against the Meta Model API.
-- A browser walkthrough of the Studio revision panel.
+- Hosted Muse Spark browser behavior. A local Muse Glimmer browser edit,
+  correction, preview and export were verified November 4; see the local guide.
 - A full `corepack pnpm build` after the event-period changes.
 - Reproduction on another machine.
 

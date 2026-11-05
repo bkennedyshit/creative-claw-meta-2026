@@ -62,6 +62,25 @@ describe("Creative revision loop client", () => {
     studio.revisions.updateForm({ input: " C:/media/photo.png ", instruction: "Make it warmer" });
   });
 
+  it("shows a finished revision even if GPU status refresh stalls", async () => {
+    vi.spyOn(studio, "refreshGpu").mockImplementation(() => new Promise(() => {}));
+    request.mockResolvedValue({ session: sessionWith(succeeded), revision: succeeded });
+    await studio.revisions.start();
+    expect(studio.revisions.busy).toBe(false);
+    expect(studio.revisions.message?.ok).toBe(true);
+    expect(preview).toHaveBeenCalledOnce();
+  });
+
+  it("does not reload a model while Studio has released the GPU", async () => {
+    studio.gpu.leaseOwner = "creative-studio";
+    await studio.revisions.start();
+    expect(request).not.toHaveBeenCalled();
+    expect(studio.revisions.message).toMatchObject({
+      ok: false,
+      text: expect.stringContaining("Return GPU"),
+    });
+  });
+
   it("starts an edit, stores the session and previews the planned revision", async () => {
     request.mockResolvedValue({ session: sessionWith(succeeded), revision: succeeded });
     await studio.revisions.start();

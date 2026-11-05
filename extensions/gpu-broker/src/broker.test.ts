@@ -351,6 +351,26 @@ describe("GpuBroker", () => {
   });
 
   describe("Ollama interaction", () => {
+    it("restores state when a strict release is aborted during initial eviction", async () => {
+      const controller = new AbortController();
+      mockFetch.mockImplementationOnce(
+        (_url: string, init: { signal: AbortSignal }) =>
+          new Promise((_resolve, reject) => {
+            init.signal.addEventListener("abort", () => reject(new Error("request aborted")), {
+              once: true,
+            });
+          }),
+      );
+      const release = broker.release("creative-studio", undefined, undefined, {
+        strict: true,
+        signal: controller.signal,
+      });
+      controller.abort();
+      await expect(release).rejects.toThrow("request aborted");
+      expect(broker.getLease()).toBeNull();
+      expect(broker.getState()).toBe(BrokerState.Idle);
+    });
+
     it("gets resident models", async () => {
       mockOllamaPs([
         { name: "llama3:8b", size_vram: 4000000000 },

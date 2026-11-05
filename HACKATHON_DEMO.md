@@ -6,7 +6,7 @@ Review this script, the recording and all submission text yourself before submit
 
 **0:00-0:20 Intro and disclosure.** Creative Claw lets creators edit their own photos, audio and video by describing the change. State on screen that OpenClaw and Creative Claw, including the native engines and Studio, are the existing open-source foundation. The new work is the Meta-planned revision workflow (see [HACKATHON_NEW_WORK.md](HACKATHON_NEW_WORK.md)).
 
-**0:20-1:30 Describe an edit.** Open Creative Studio on the sponsor profile. Choose an ordinary photo and type a request such as "make it warmer and a little brighter". Rehearse the exact wording first; the model can only use operations in the live catalog. Show the revision in the panel: "planned by" with the provider and `muse-spark-1.3`, and the plan steps with their parameters. Per-node results appear in the `revise` JSON trace, not in the panel. Show the rendered preview next to the original.
+**0:20-1:30 Describe an edit.** Open Creative Studio on the local Muse Glimmer profile described in HACKATHON_LOCAL_MODEL.md. Choose an ordinary photo and type a request such as "make it warmer and a little brighter". Rehearse the exact wording first; the model can only use operations in the live catalog. Show the revision in the panel: "planned by" with the provider and `muse-glimmer:30b`, and the plan steps with their parameters. Per-node results are retained in the persisted revision execution records. Show the rendered preview next to the original.
 
 **1:30-2:15 Correction.** Enter feedback such as "too orange, keep it closer to natural". Point out that the new plan is complete and runs on the original file, not on the previous preview. Compare the two previews.
 
@@ -16,9 +16,10 @@ Review this script, the recording and all submission text yourself before submit
 
 ## Before recording
 
-- [ ] `MODEL_API_KEY` is set in `.env.meta` and `check` reports `credentialAvailable: true`.
-- [ ] The sponsor gateway is running (`node --env-file=.env.meta scripts/meta-hackathon.mjs start`).
+- [ ] `ollama list` includes `muse-glimmer:30b`; no Meta API key is required for this route.
+- [ ] The isolated Glimmer gateway is running on port 18991; follow HACKATHON_LOCAL_MODEL.md.
 - [ ] All media is your own or licensed for this use.
 - [ ] No key, token or private path is visible on screen.
-- [ ] Run the same edit with `revise` in a terminal and keep its JSON trace as backup evidence of the Meta provider, model and output.
+- [ ] Rehearse the exact edit, correction and export; retain its execution trace as backup evidence of the actual planner and output.
+- [ ] Record and play a short microphone test before recording the full demo. An audio stream can exist while containing silence.
 - [ ] The final video is under three minutes.

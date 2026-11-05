@@ -122,10 +122,31 @@ export class GpuBroker {
    * Release GPU for user: evict Ollama models, create lease.
    * Returns the lease token.
    */
-  async release(owner: string, reason?: string, holdMs?: number): Promise<Lease> {
+  async release(
+    owner: string,
+    reason?: string,
+    holdMs?: number,
+    options: { strict?: boolean; signal?: AbortSignal } = {},
+  ): Promise<Lease> {
+    if (this.state === BrokerState.Draining) {
+      throw new Error("GPU release already in progress");
+    }
+    const previousState = this.state;
     this.transition(BrokerState.Draining, `release requested by ${owner}`);
 
-    await this.evictAllModels();
+    try {
+      await this.evictAllModels(options);
+    } catch (error) {
+      this.transition(
+        this.currentLease
+          ? BrokerState.UserClaimed
+          : previousState === BrokerState.Dormant
+            ? BrokerState.Dormant
+            : BrokerState.Idle,
+        "GPU release failed",
+      );
+      throw error;
+    }
 
     const hold = holdMs ?? this.config.defaultLeaseHoldMs;
     const now = Date.now();
@@ -290,33 +311,55 @@ export class GpuBroker {
   }
 
   /** Get list of currently loaded Ollama models */
-  async getResidentModels(): Promise<string[]> {
+  async getResidentModels(
+    options: { strict?: boolean; signal?: AbortSignal } = {},
+  ): Promise<string[]> {
     try {
-      const res = await fetch(`${this.config.ollamaBaseUrl}/api/ps`);
+      const res = await fetch(`${this.config.ollamaBaseUrl}/api/ps`, {
+        signal: options.signal ?? AbortSignal.timeout(5000),
+      });
       if (!res.ok) {
-        return [];
+        throw new Error(`Ollama model status failed (${res.status})`);
       }
       const data = (await res.json()) as { models?: OllamaModelInfo[] };
       return data.models?.map((m) => m.name) ?? [];
-    } catch {
+    } catch (error) {
+      if (options.strict) {
+        throw error;
+      }
       return [];
     }
   }
 
   /** Evict all resident Ollama models by sending keep_alive:0 */
-  async evictAllModels(): Promise<void> {
-    const models = await this.getResidentModels();
-    await Promise.allSettled(models.map((model) => this.evictModel(model)));
+  async evictAllModels(options: { strict?: boolean; signal?: AbortSignal } = {}): Promise<void> {
+    const models = await this.getResidentModels(options);
+    const requests = models.map((model) => this.evictModel(model, options));
+    if (options.strict) {
+      await Promise.all(requests);
+    } else {
+      await Promise.allSettled(requests);
+    }
   }
 
-  private async evictModel(model: string): Promise<void> {
+  private async evictModel(
+    model: string,
+    options: { strict?: boolean; signal?: AbortSignal } = {},
+  ): Promise<void> {
     try {
-      await fetch(`${this.config.ollamaBaseUrl}/api/generate`, {
+      const response = await fetch(`${this.config.ollamaBaseUrl}/api/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ model, keep_alive: 0 }),
+        signal: options.signal,
       });
-    } catch {
+      if (options.strict && !response.ok) {
+        throw new Error(`Ollama eviction failed (${response.status})`);
+      }
+    } catch (error) {
+      if (options.strict) {
+        throw error;
+      }
       // Best-effort eviction
     }
   }

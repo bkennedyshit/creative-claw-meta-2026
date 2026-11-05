@@ -18,6 +18,40 @@ class MockHost {
 }
 
 describe("CreativeStudioController", () => {
+  it("releases and returns VRAM with refreshed live state and visible errors", async () => {
+    const host = new MockHost();
+    let claimed = false;
+    const request = vi.fn(async (method: string) => {
+      if (method === "gpu.release") {
+        claimed = true;
+        return { ok: true };
+      }
+      if (method === "gpu.reclaim") {
+        claimed = false;
+        return { ok: true };
+      }
+      return {
+        state: claimed ? "user-claimed" : "idle",
+        models: claimed ? [] : ["muse-glimmer:30b"],
+        leaseOwner: claimed ? "creative-studio" : null,
+      };
+    });
+    host.client = { request } as unknown as GatewayBrowserClient;
+    const controller = new CreativeStudioController(host);
+    await controller.changeGpu("release");
+    expect(controller.gpu.models).toEqual([]);
+    expect(controller.gpu.leaseOwner).toBe("creative-studio");
+    expect(controller.gpuBusy).toBe(false);
+    await controller.changeGpu("reclaim");
+    expect(controller.gpu.leaseOwner).toBeUndefined();
+    request.mockRejectedValueOnce(new Error("Gateway denied release"));
+    await controller.changeGpu("release");
+    expect(controller.gpuMessage).toMatchObject({
+      ok: false,
+      message: expect.stringContaining("denied"),
+    });
+  });
+
   it("renders descriptor controls and commits fractional times without erasing partial input", () => {
     const controller = new CreativeStudioController(new MockHost());
     controller.activeMedia = "video";

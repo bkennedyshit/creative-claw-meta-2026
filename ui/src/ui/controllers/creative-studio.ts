@@ -35,6 +35,7 @@ export type CreativeGpuState = {
   totalMb: number;
   models: string[];
   dormant: boolean;
+  leaseOwner?: string;
 };
 export type CreativeRecentOutput = { id: string; path: string; type: string; previewUrl?: string };
 export type CreativePreview = { url: string; type: string; path: string };
@@ -166,6 +167,8 @@ export class CreativeStudioController implements ReactiveController {
   activeMedia: CreativeMedia = "image";
   engines: Record<CreativeMedia, CreativeEngineState> = defaultEngines("Not loaded yet");
   gpu: CreativeGpuState = defaultGpu("unknown");
+  gpuBusy = false;
+  gpuMessage?: CreativeRunResult;
   recentOutputs: CreativeRecentOutput[] = [];
   runForm: CreativeRunForm = { input: "", op: "", output: "", params: {} };
   running = false;
@@ -370,6 +373,48 @@ export class CreativeStudioController implements ReactiveController {
     }
   }
 
+  async refreshGpu() {
+    if (this.host.client && this.host.connected) {
+      await this.loadGpu(this.host.client);
+      this.host.requestUpdate();
+    }
+  }
+
+  async changeGpu(action: "release" | "reclaim") {
+    const client = this.host.client;
+    if (
+      !client ||
+      !this.host.connected ||
+      this.gpuBusy ||
+      this.running ||
+      this.workflow.busy ||
+      this.revisions.busy
+    )
+      return;
+    this.gpuBusy = true;
+    this.gpuMessage = undefined;
+    this.host.requestUpdate();
+    try {
+      const result = await client.request<{ ok: boolean; error?: string }>(`gpu.${action}`, {});
+      if (!result.ok) {
+        throw new Error(result.error || "GPU action failed");
+      }
+      this.gpuMessage = {
+        ok: true,
+        message:
+          action === "release"
+            ? "Ollama models unloaded. VRAM released for other work."
+            : "GPU returned to the app. The configured model loads on the next edit.",
+      };
+    } catch (error) {
+      this.gpuMessage = { ok: false, message: String(error) };
+    } finally {
+      await this.loadGpu(client);
+      this.gpuBusy = false;
+      this.host.requestUpdate();
+    }
+  }
+
   private async loadGpu(client: GatewayBrowserClient): Promise<void> {
     try {
       const res = await client.request<Record<string, unknown>>("gpu.status", {});
@@ -383,6 +428,7 @@ export class CreativeStudioController implements ReactiveController {
         totalMb: asNumber(record.totalMb ?? record.vramTotalMb),
         models,
         dormant: record.dormant === true,
+        leaseOwner: asString(record.leaseOwner) || undefined,
       };
     } catch {
       this.gpu = defaultGpu("unavailable");

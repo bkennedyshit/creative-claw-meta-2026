@@ -6,7 +6,7 @@
 
 General-purpose creative editing agent for the Meta Global AI Developer Hackathon.
 
-**Status:** Meta Model API profile and the model-planned edit, correction and export workflow are implemented and tested locally with the real native engines. Live Meta inference is pending a Model API key.
+**Status (November 4):** Local Meta Muse Glimmer inference is verified through Ollama: a model-planned edit, correction and export completed in Studio with the real native engine and the original preserved. No Meta API key is needed for this route. The separate hosted Muse Spark profile remains unverified.
 
 - [Competition direction and provenance](HACKATHON_PLAN.md)
 - [Muse, memory and VR decisions](HACKATHON_MODELS.md)
@@ -14,10 +14,11 @@ General-purpose creative editing agent for the Meta Global AI Developer Hackatho
 
 ## Meta Global AI Developer Hackathon edition
 
-This copy adds a Meta-planned "describe an edit" workflow: Muse Spark plans edits over Creative Claw's native operations, and the creator previews, corrects and exports the result while the original file stays unchanged. The foundation is OpenClaw and Creative Claw; their engines, Studio and runtime are inherited, not event work. Live Meta inference has not been verified yet.
+This copy adds a Meta-planned "describe an edit" workflow: a Meta model plans edits over Creative Claw's native operations, and the creator previews, corrects and exports the result while the original file stays unchanged. The foundation is OpenClaw and Creative Claw; their engines, Studio and runtime are inherited, not event work. The locally verified model is Muse Glimmer through Ollama.
 
 - [Event-period new work and foundation](HACKATHON_NEW_WORK.md)
 - [Setup, launch and verification status](HACKATHON_TESTING.md)
+- [Local Muse Glimmer setup (no API key)](HACKATHON_LOCAL_MODEL.md)
 - [Three-minute demo script](HACKATHON_DEMO.md)
 
 ## Existing Creative Claw foundation

@@ -165,6 +165,7 @@ export class CreativeRevisionController {
 
   private async acceptRevision({ session, revision }: RevisionResult) {
     this.accept(session);
+    void this.studio.refreshGpu();
     if (revision.status === "failed") {
       const planner = plannerLabel(revision);
       const detail = revision.error || "No error was reported";
@@ -194,6 +195,13 @@ export class CreativeRevisionController {
     const client = this.host.client;
     if (!client || !this.host.connected) {
       this.fail("Gateway not connected");
+      return;
+    }
+    if (
+      method !== "creative.studio.revision.export" &&
+      (this.studio.gpuBusy || this.studio.gpu.leaseOwner)
+    ) {
+      this.fail("Return GPU to app before planning another edit.");
       return;
     }
     if (this.busy) {

@@ -71,13 +71,16 @@ function renderMediaTabs(props: CreativeStudioViewProps) {
   `;
 }
 
-function renderGpuWidget(gpu: CreativeGpuState) {
+function renderGpuWidget(gpu: CreativeGpuState, studio?: CreativeStudioController) {
   const total = gpu.totalMb > 0 ? gpu.totalMb : 0;
   const pct = total > 0 ? Math.min(100, Math.round((gpu.usedMb / total) * 100)) : 0;
+  const planner = studio?.revisions.session?.revisions.at(-1)?.planner;
+  const busy =
+    studio?.gpuBusy || studio?.running || studio?.workflow.busy || studio?.revisions.busy;
   return html`
-    <section class="card creative-gpu">
+    <section class="card creative-gpu" aria-label="GPU broker">
       <div class="creative-gpu__head">
-        <div class="card-title">GPU</div>
+        <div class="card-title">GPU Broker</div>
         <span class="pill pill--sm ${gpu.dormant ? "" : "pill--ok"}">${gpu.state}</span>
       </div>
       <div class="creative-gpu__meter" title="${gpu.usedMb} / ${total} MB">
@@ -87,11 +90,47 @@ function renderGpuWidget(gpu: CreativeGpuState) {
         <span>${gpu.usedMb} / ${total > 0 ? `${total} MB` : "unknown"}</span>
         <span>${gpu.dormant ? "dormant" : "active"}</span>
       </div>
+      ${planner
+        ? html`<p>Last edit planner: <strong>${planner.provider}/${planner.model}</strong></p>`
+        : nothing}
+      <div class="muted">Resident Ollama models · shared GPU</div>
       <div class="creative-gpu__models">
         ${gpu.models.length === 0
           ? html`<span class="muted">No resident models</span>`
           : gpu.models.map((model) => html`<span class="chip">${model}</span>`)}
       </div>
+      ${studio
+        ? html`
+            <div class="row" style="gap: 8px; flex-wrap: wrap; margin-top: 12px">
+              <button
+                class="btn"
+                ?disabled=${busy || gpu.state === "unavailable" || !!gpu.leaseOwner}
+                @click=${() => void studio.changeGpu("release")}
+              >
+                Release VRAM
+              </button>
+              <button
+                class="btn"
+                ?disabled=${busy || gpu.leaseOwner !== "creative-studio"}
+                @click=${() => void studio.changeGpu("reclaim")}
+              >
+                Return GPU to app
+              </button>
+              <button class="btn" ?disabled=${busy} @click=${() => void studio.refreshGpu()}>
+                Refresh GPU
+              </button>
+            </div>
+            <p class="muted">
+              Release unloads all resident Ollama models, including models used by other local apps.
+              Return before requesting another edit.
+            </p>
+            ${studio.gpuMessage
+              ? html`<div role="status" class="callout ${studio.gpuMessage.ok ? "" : "warn"}">
+                  ${studio.gpuMessage.message}
+                </div>`
+              : nothing}
+          `
+        : nothing}
     </section>
   `;
 }
@@ -262,8 +301,8 @@ export function renderCreativeStudio(props: CreativeStudioViewProps) {
           <div class="creative-hero__eyebrow">Creative Claw · Meta hackathon edition</div>
           <h1 id="creative-hero-title">Describe the edit. Review it. Correct it. Export it.</h1>
           <p class="creative-hero__lede">
-            Meta Muse Spark plans edits from a creator's words. Creative Claw's native C++ and
-            FFmpeg engines execute them on local files, and originals are preserved.
+            Meta models plan edits from a creator's words. Creative Claw's native C++ and FFmpeg
+            engines execute them on local files, and originals are preserved.
           </p>
           <div class="creative-hero__formats" aria-label="Supported media engines">
             <span>IMAGE</span><span>AUDIO</span><span>VIDEO</span><span>VECTOR</span>
@@ -290,7 +329,8 @@ export function renderCreativeStudio(props: CreativeStudioViewProps) {
         </div>
         <div class="creative-hero__attribution">Built on the OpenClaw runtime</div>
       </section>
-      ${renderMediaTabs(props)} ${props.studio ? renderCreativeRevision(props.studio) : nothing}
+      ${renderGpuWidget(props.gpu, props.studio)} ${renderMediaTabs(props)}
+      ${props.studio ? renderCreativeRevision(props.studio) : nothing}
       ${props.studio?.workflow.dirty
         ? html`<div class="callout warn" role="alert">
             Unsaved draft: ${props.studio.workflow.graph?.name}. Save or discard it before switching
@@ -371,7 +411,6 @@ export function renderCreativeStudio(props: CreativeStudioViewProps) {
         </section>
         <div class="creative-studio__grid">
           <div class="creative-studio__main">${renderActivePanel(props)}</div>
-          <div class="creative-studio__side">${renderGpuWidget(props.gpu)}</div>
         </div>
       </details>
     </section>

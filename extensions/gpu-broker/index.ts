@@ -8,6 +8,7 @@ import {
   unpublishGpuBrokerHandle,
   type GpuBrokerCoopHandle,
 } from "./src/coop-handle.js";
+import { registerGpuGateway } from "./src/gateway.js";
 import { registerGpuSurface, type GpuSurfaceApi } from "./src/surface.js";
 import {
   handleGpuStatus,
@@ -108,31 +109,7 @@ export default definePluginEntry({
       },
     });
 
-    // Browser-facing status for Creative Studio. Gateway RPC methods are a
-    // separate registry from agent tools, so return the UI's structured shape
-    // directly from the same live in-process broker.
-    api.registerGatewayMethod("gpu.status", async ({ respond }) => {
-      const liveBroker = broker;
-      if (!liveBroker) {
-        return respond(true, {
-          state: "unavailable",
-          usedMb: 0,
-          totalMb: 0,
-          models: [],
-          dormant: false,
-        });
-      }
-
-      const state = liveBroker.getState();
-      const snapshot = liveBroker.getSnapshot();
-      respond(true, {
-        state,
-        usedMb: snapshot?.usedMb ?? 0,
-        totalMb: snapshot?.totalMb ?? 0,
-        models: await liveBroker.getResidentModels(),
-        dormant: state === "dormant",
-      });
-    });
+    registerGpuGateway(api, getBroker);
 
     // --- Tool: gpu.status ---
     api.registerTool(
